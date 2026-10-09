@@ -332,7 +332,7 @@ export class Match {
     this.disabledBonds = bans.drawn;
     this.staticInactiveBonds = bans.staticOff;
     this.bannedChess = bans.banned;
-    this.pool = new SharedPool(this.gd, { banned: bans.banned });
+    this.pool = new SharedPool(this.gd, { banned: bans.banned, playerCount: this.order.length });
 
     this.phase = PHASE.LOBBY;
     this.round = 0;
@@ -1498,7 +1498,7 @@ export class Match {
   // SP_DRAFT (机变)
 
   enterSpDraft() {
-    const draft = generateDraft(this.gd, this.rngDraft, this.round, { stageId: this.stageId, bondAvailable: (bondId) => this.bondLive(bondId) });
+    const draft = generateDraft(this.gd, this.rngDraft, this.round, { playerCount: this.order.length, stageId: this.stageId, bondAvailable: (bondId) => this.bondLive(bondId) });
     const alive = this.alivePlayers();
     if (!draft || !alive.length) { this.enterPrep(); return; }
     this.phase = PHASE.SP_DRAFT;

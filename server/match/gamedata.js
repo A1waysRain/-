@@ -141,6 +141,7 @@ export class GameData {
     const scaling = typeof ms.aliveScaling === 'boolean' ? ms.aliveScaling : cs.aliveScaling === true;
     const full = Math.max(1, Math.floor(pick('aliveFull', 4)));
     const n = Number(aliveCount);
+    if (Number.isFinite(n) && n > 4) return pick('coop', 1) * (Math.floor(n) / 4);
     const alive = scaling && Number.isFinite(n) && n >= 1 ? Math.min(full, Math.floor(n)) : full;
     return pick('coop', 1) * (alive / full);
   }

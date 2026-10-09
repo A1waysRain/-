@@ -53,14 +53,14 @@ export class SharedPool {
    * @param {import('./gamedata.js').GameData} gd
    * @param {{ banned?: Iterable<string> }} [opts]
    */
-  constructor(gd, { banned = [] } = {}) {
+  constructor(gd, { banned = [], playerCount = 4 } = {}) {
     this.gd = gd;
     const ban = new Set(banned);
     /** @type {Map<string, { cap: number, left: number, tier: number }>} */
     this.entries = new Map();
     for (const id of gd.visibleChess) {
       if (ban.has(id)) continue;
-      const cap = gd.poolCopies(id);
+      const cap = Math.ceil(gd.poolCopies(id) * Math.max(1, playerCount / 4));
       if (cap <= 0) continue;
       this.entries.set(id, { cap, left: cap, tier: gd.tierOf(id) });
     }
