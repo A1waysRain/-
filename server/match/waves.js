@@ -14,7 +14,8 @@
 //   * picks: for every round 1..15, generated now (so the preview and every battle agree): half = r ≤ 7; a weighted
 //     (entry.weight) special entry of the round's type and half whose SPECIAL key is not in the mode's
 //     inactiveEnemyKeys (attached keys are never filtered); normal / elite = a random attached key
-//   * boss: weighted mode.bossWeights; hidden boss: weighted mode.hiddenBossWeights (independent)
+//   * boss: weighted mode.bossWeights; hidden boss: weighted mode.hiddenBossWeights (independent). The lobby may pass
+//     excludeBossIds for server-wide cooldowns (currently 铳: after appearing, the next five started matches exclude it).
 // Per round (buildNormalWave / buildBossWave; one composition shared by every player):
 //   * every template SPAWN action whose key is a placeholder (N/E/S walk, NF/EF/SF fly) becomes the pick's
 //     normal / elite / special key — or is SKIPPED (not spawned, not previewed) when the new key's movement class differs
@@ -178,7 +179,7 @@ function scheduleRng(rng) {
  *   `factions` also carries the schedule as a non-enumerable `schedule` property ({ typeSlots, picks }), so callers
  *   that keep only the factions array (Match: buildNormalWave(gd, rng, this.factions, r)) get the official rounds.
  */
-export function setupMatchWaves(gd, rng) {
+export function setupMatchWaves(gd, rng, opts = {}) {
   // stage
   const stageIds = Array.isArray(gd.mode.stages) ? gd.mode.stages : [];
   const stagePairs = stageIds.map((id) => [id, gd.stage(id)]).filter(([, s]) => s && s.active !== false && Number(s.weight) > 0).map(([id, s]) => [id, s.weight]);
@@ -196,7 +197,8 @@ export function setupMatchWaves(gd, rng) {
   const chosen = shuffled.slice(0, Math.min(n, shuffled.length));
   const factions = chosen.slice().sort((a, b) => (types[a]?.sortId ?? 9) - (types[b]?.sortId ?? 9));
   // bosses
-  const bw = gd.bossWeights(false);
+  const excluded = opts.excludeBossIds instanceof Set ? opts.excludeBossIds : new Set();
+  const bw = gd.bossWeights(false).filter(([id]) => !excluded.has(id));
   const bossId = bw.length ? weightedPick(rng, bw) : null;
   const hw = gd.bossWeights(true);
   const hiddenBossId = hw.length && gd.hiddenRound ? weightedPick(rng, hw) : null;

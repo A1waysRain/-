@@ -1120,6 +1120,7 @@ describe('websocket lobby', () => {
 class RecordingMatch extends Match {
   static instances = [];
   static failStart = false;
+  static bossSequence = [];
   constructor(opts) {
     super(opts);
     this.opts = opts;
@@ -1129,6 +1130,7 @@ class RecordingMatch extends Match {
   start() {
     this.calls.push(['start']);
     if (RecordingMatch.failStart) throw new Error('intentional start failure');
+    if (RecordingMatch.bossSequence.length) this.bossId = RecordingMatch.bossSequence.shift();
     super.start();
   }
   handle(playerId, msg) {
@@ -1165,6 +1167,7 @@ describe('lobby timers and match interface', () => {
   });
   afterEach(async () => {
     RecordingMatch.failStart = false;
+    RecordingMatch.bossSequence = [];
     await pool.closeAll();
   });
   after(async () => { await srv?.close(); });
@@ -1347,6 +1350,46 @@ describe('lobby timers and match interface', () => {
     RecordingMatch.failStart = false;
     await expectOk(host, { t: 'room.start' });
     await host.waitFor('m.public');
+  });
+
+  test('boss 铳 cooldown is server-wide, lasts five successful later starts, and ignores failed starts', async () => {
+    const host = await pool.player('CooldownHost');
+    await createRoom(host, 'solo', 'NORMAL');
+    const otherHost = await pool.player('CooldownAlt');
+    await createRoom(otherHost, 'solo', 'NORMAL');
+
+    // The first successful match draws 铳; a failed attempt must not spend one of its five protected starts.
+    RecordingMatch.bossSequence = ['boss_2', 'boss_1', 'boss_1', 'boss_1', 'boss_1', 'boss_1', 'boss_1'];
+    RecordingMatch.instances.length = 0;
+    await expectOk(host, { t: 'room.start' });
+    await host.waitFor('m.public');
+    assert.equal(srv.lobby.bossCooldowns.get('boss_2'), 5);
+    await expectOk(host, { t: 'g.infoReady' });
+    await host.waitFor('room.state', (s) => !s.inMatch);
+
+    RecordingMatch.failStart = true;
+    await expectError(host, { t: 'room.start' }, ERR.INTERNAL);
+    assert.equal(srv.lobby.bossCooldowns.get('boss_2'), 5, 'failed starts do not consume cooldown');
+    RecordingMatch.failStart = false;
+
+    for (let i = 0; i < 5; i++) {
+      const starter = i % 2 === 0 ? otherHost : host;
+      await expectOk(starter, { t: 'room.start' });
+      const match = RecordingMatch.instances.at(-1);
+      assert.ok(match.opts.excludeBossIds.has('boss_2'), `subsequent match ${i + 1} excludes 铳`);
+      await starter.waitFor('m.public');
+      await expectOk(starter, { t: 'g.infoReady' });
+      await starter.waitFor('room.state', (s) => !s.inMatch);
+    }
+    assert.equal(srv.lobby.bossCooldowns.has('boss_2'), false, 'cooldown expires after five successful later starts');
+
+    await expectOk(otherHost, { t: 'room.start' });
+    assert.equal(RecordingMatch.instances.at(-1).opts.excludeBossIds.has('boss_2'), false, 'sixth later match may draw 铳');
+    await otherHost.waitFor('m.public');
+    await expectOk(otherHost, { t: 'g.infoReady' });
+    await otherHost.waitFor('room.state', (s) => !s.inMatch);
+    await expectOk(host, { t: 'room.leave' });
+    await expectOk(otherHost, { t: 'room.leave' });
   });
 
   test('reconnect window expiry during a match → onLeave; old token no longer resumes; empty room disposed', async () => {

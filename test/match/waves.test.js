@@ -36,6 +36,15 @@ test('match setup: stage allowed by the mode, 3 distinct random factions, weight
   assert.deepEqual(a, b, 'deterministic');
 });
 
+test('server boss cooldown filter excludes 铳 while other bosses remain selectable', () => {
+  const gd = new GameData(DATA, 'mode_multi_hard');
+  for (let seed = 1; seed <= 30; seed++) {
+    const setup = setupMatchWaves(gd, createRng(seed), { excludeBossIds: new Set(['boss_2']) });
+    assert.notEqual(setup.bossId, 'boss_2');
+    assert.ok(setup.bossId && gd.mode.bossWeights[setup.bossId] > 0);
+  }
+});
+
 test('type schedule: each chosen type owns exactly 3 of the 15 round slots, SPECIAL the other 6, shuffled; the order stays hidden', () => {
   const gd = new GameData(DATA, 'mode_multi_normal');
   const firstSlot = new Map();

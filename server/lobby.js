@@ -213,6 +213,8 @@ export class Lobby {
     this.resyncTimers = new Map();
     /** per-network limit warnings: at most one log line per 10 s (the rest are counted) */
     this.limitLog = { at: -Infinity, suppressed: 0 };
+    /** Server-wide boss cooldowns: bossId -> subsequent matches to exclude. */
+    this.bossCooldowns = new Map();
   }
 
   /** @param {string} code @returns {Room | null} */
@@ -592,6 +594,7 @@ export class Lobby {
     const ctx = { live: true, ended: false, disposed: false, match: null, lastPublic: null, sharedResult: null, results: new Map() };
     let seed = 0;
     try { seed = this.seedFn() >>> 0; } catch { seed = randomInt(2 ** 32); }
+    const excludeBossIds = new Set([...this.bossCooldowns].filter(([, n]) => n > 0).map(([id]) => id));
     try {
       const match = new this.MatchClass({
         roomCode: room.code,
@@ -602,6 +605,7 @@ export class Lobby {
         // the spectator seats (header): watched like eliminated players, never players
         spectators: room.spectators.map((s) => s.playerId),
         seed,
+        excludeBossIds,
         // the room's match number: with the seed it keeps battleIds unique across the room's matches (DESIGN §14)
         matchNo: room.matchCount + 1,
         data: this.safeData(),
@@ -620,6 +624,14 @@ export class Lobby {
       this.log.info(`[lobby] ${room.code} match #${room.matchCount} starting (${room.mode}/${room.difficulty}, ${seats.length} seats, seed ${seed})`);
       this.broadcastState(room);
       match.start();
+
+      // Commit the server-wide cooldown only after construction and startup succeed.
+      // The current match does not count toward a newly selected boss's cooldown.
+      for (const [id, n] of this.bossCooldowns) {
+        if (n <= 1) this.bossCooldowns.delete(id);
+        else this.bossCooldowns.set(id, n - 1);
+      }
+      if (match.bossId === 'boss_2') this.bossCooldowns.set('boss_2', 5);
     } catch (e) {
       this.log.error(`[lobby] ${room.code} match failed to start`, e);
       if (room.matchCtx === ctx) { room.match = null; room.matchCtx = null; room.matchKey = null; }
