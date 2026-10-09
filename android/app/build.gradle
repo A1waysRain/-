@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+}
+
+def repo = rootProject.projectDir.parentFile
+def runtime = new File(repo, '.cache/android')
+def generatedAssets = layout.buildDirectory.dir('generated/game-assets')
+
+android {
+    namespace 'org.strongholdprotocol.alliance'
+    compileSdk 35
+
+    buildFeatures { buildConfig true }
+
+    defaultConfig {
+        applicationId 'org.strongholdprotocol.alliance'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '0.1.3'
+        ndk { abiFilters 'arm64-v8a' }
+        externalNativeBuild {
+            cmake { arguments '-DANDROID_STL=c++_shared' }
+        }
+    }
+
+    sourceSets {
+        main.assets.srcDirs += generatedAssets.get().asFile
+        main.jniLibs.srcDirs += new File(runtime, 'jniLibs')
+    }
+
+    externalNativeBuild {
+        cmake { path 'src/main/cpp/CMakeLists.txt' }
+    }
+
+    packaging {
+        resources.excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*']
+    }
+
+    androidResources {
+        noCompress 'zip', 'mp3', 'ogg', 'webp', 'png', 'jpg', 'skel'
+    }
+}
+
+tasks.register('bundleGame', Zip) {
+    archiveFileName = 'game.zip'
+    destinationDirectory = generatedAssets
+    reproducibleFileOrder = true
+    preserveFileTimestamps = false
+    from(new File(repo, 'package.json'))
+    from(new File(rootProject.projectDir, 'mobile-entry.mjs'))
+    into('server') { from(new File(repo, 'server')) }
+    into('shared') { from(new File(repo, 'shared')) }
+    into('data') { from(new File(repo, 'data')) }
+    into('public') { from(new File(repo, 'public')) }
+    into('node_modules/ws') { from(new File(repo, 'node_modules/ws')) }
+    // server/sim/nodeData.js can use these research tables as a fallback.
+    into('docs/research') { from(new File(repo, 'docs/research')) }
+    exclude '**/.DS_Store', '**/Thumbs.db'
+}
+
+tasks.named('preBuild').configure { dependsOn tasks.named('bundleGame') }

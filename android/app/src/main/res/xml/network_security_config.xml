@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Keep HTTP available for the embedded server and existing LAN links. -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <!-- Only this exact host may use the owner's SakuraFrp certificate. -->
+    <domain-config>
+        <domain includeSubdomains="false">dx.frp-bus.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/sakura_dx_certificate" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
