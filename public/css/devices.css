@@ -165,3 +165,21 @@ html:not(.sp-in-match) .toast-host { margin-top: var(--sa-t); }
   .create-box { margin-top: .18rem; }
   .create-box .btn--xl { height: .8rem; }
 }
+/* Phone landscape: use the marked space for larger sign-in and join controls. */
+@media (orientation: landscape) and (max-height: 600px) and (pointer: coarse),
+       (orientation: landscape) and (max-height: 600px) and (any-pointer: coarse) {
+  .title-login { width: min(8.4rem, 78vw); padding: .26rem .32rem; gap: .18rem; }
+  .title-login .field__box { min-height: 44px; }
+  .title-login .field__input { font-size: max(.2rem, 16px); }
+  .title-login > .btn { min-height: 44px; }
+  .title-login .title-conn { gap: .14rem; font-size: max(.14rem, 12px); }
+  .title-login .title-conn > .btn, .title-login .pill-btn { white-space: nowrap; }
+  .join-panel .panel__body { padding: .28rem .3rem; gap: .2rem; min-height: 2.3rem; }
+  .join-row { flex-wrap: wrap; gap: .16rem; }
+  .join-row .field { flex: 1 0 100%; }
+  .join-row .field__box { min-height: 44px; }
+  .join-row .field__input { font-size: max(.2rem, 16px); }
+  .join-row > .btn, .join-row > .tooltip { flex: 1; }
+  .join-row .btn { width: 100%; min-height: 40px; }
+  .join-foot { font-size: max(.14rem, 12px); }
+}
