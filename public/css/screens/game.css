@@ -29,6 +29,19 @@
 }
 .gtop > * { pointer-events: auto; }
 .gtop__left { display: flex; align-items: center; gap: .16rem; }
+.gtop__bondtoggle {
+  display: inline-flex; align-items: center; justify-content: center; gap: .08rem;
+  flex: none; margin-left: auto; min-width: .82rem; min-height: .46rem; padding: .06rem .12rem;
+  border: 1px solid var(--mint-700); background: linear-gradient(180deg, rgba(10, 14, 12, .92), rgba(10, 14, 12, .78));
+  color: var(--text-md); font: inherit; font-size: .16rem; cursor: pointer;
+  box-shadow: 0 .04rem .16rem rgba(0, 0, 0, .4);
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.gtop__bondtoggle:hover, .gtop__bondtoggle:focus-visible {
+  background: var(--mint-a20); border-color: var(--mint-500); color: var(--mint-400);
+}
+.gtop__bondtoggle span { font-family: var(--font-num); font-size: .22rem; }
+.gm__bonds[hidden] { display: none; }
 .gtop__meta { display: flex; flex-direction: column; align-items: flex-start; gap: .06rem; }
 .gtop__exit { box-shadow: 0 .06rem .2rem rgba(0, 0, 0, .5); }
 .gtop__center {

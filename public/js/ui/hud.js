@@ -308,7 +308,8 @@ export function PauseButton({ paused, busy = false, onToggle }) {
  *     `left` (a leaker in 联防): its enemies still standing — the capsule's ×N tag
  */
 export function TopBar({ pub, priv, conn, hud, total, drawer, onExit, onDrawer, onReady, readyBusy, readyCount, playerCount, pen = false, penAvail = false, onPen = () => {},
-  config = null, frozenAt = null, pause = null, live = null, spectator = false }) {
+  config = null, frozenAt = null, pause = null, live = null, spectator = false,
+  bondsCollapsed = false, onToggleBonds = null }) {
   const phase = pub?.phase;
   const boss = isBossPhase(phase);
   const lp = boss && Number.isFinite(pub?.teamLp) ? pub.teamLp : Number.isFinite(priv?.lp) ? priv.lp : null;
@@ -337,6 +338,13 @@ export function TopBar({ pub, priv, conn, hud, total, drawer, onExit, onDrawer, 
         <${PingPill} ms=${conn?.ping} online=${conn?.status === 'online'} />
         ${pub?.difficulty ? html`<${DifficultyTag} difficulty=${pub.difficulty} size="sm" />` : null}
       </div>
+      ${onToggleBonds ? html`<button type="button" class="gtop__bondtoggle tapx"
+        aria-controls="game-bond-strip" aria-expanded=${!bondsCollapsed}
+        aria-label=${bondsCollapsed ? '展开盟约展示栏' : '收起盟约展示栏'}
+        title=${bondsCollapsed ? '展开盟约展示栏' : '收起盟约展示栏'}
+        onClick=${onToggleBonds}>
+        <span aria-hidden="true">${bondsCollapsed ? '⌄' : '⌃'}</span>${bondsCollapsed ? '展开' : '收起'}
+      </button>` : null}
     </div>
 
     <div class="gtop__center brackets">
