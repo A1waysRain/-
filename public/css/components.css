@@ -898,7 +898,9 @@
   z-index: 3;
   flex: none;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  /* Keep the action cluster in its own intrinsic column. The old symmetric 1fr columns let the
+     center heading paint underneath the right-side buttons when the action cluster was wider. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: .24rem;
   height: 1.1rem;
@@ -916,8 +918,9 @@
   background: linear-gradient(90deg, var(--mint-700), transparent 26%, transparent 74%, var(--mint-700));
 }
 .topbar__left { justify-self: start; display: flex; align-items: center; gap: .18rem; min-width: 0; }
-.topbar__center { display: flex; flex-direction: column; align-items: center; gap: .03rem; text-align: center; }
+.topbar__center { display: flex; flex-direction: column; align-items: center; gap: .03rem; min-width: 0; text-align: center; overflow: hidden; }
 .topbar__title { display: flex; align-items: center; gap: .18rem; font-size: .3rem; font-weight: 700; letter-spacing: .1em; line-height: 1.2; }
+.topbar__center > .micro, .topbar__title { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .topbar__sep { width: 1px; height: .28rem; background: var(--line-2); }
 .topbar__right { justify-self: end; display: flex; align-items: center; gap: .16rem; min-width: 0; }
 

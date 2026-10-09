@@ -165,6 +165,35 @@ html:not(.sp-in-match) .toast-host { margin-top: var(--sa-t); }
   .create-box { margin-top: .18rem; }
   .create-box .btn--xl { height: .8rem; }
 }
+
+/* Narrow phone/tablet landscape: the lobby has several right-side actions, while the room header may
+   also contain an invite panel. Give that cluster a dedicated second row instead of letting it overlap
+   the centered heading or the safe-area edge. */
+@media (max-width: 1100px) {
+  .topbar {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
+    min-height: 1.1rem;
+    padding-top: .08rem;
+    padding-bottom: .08rem;
+    row-gap: .08rem;
+  }
+  .topbar__left { grid-column: 1; grid-row: 1; }
+  .topbar__center { grid-column: 2; grid-row: 1; align-items: flex-end; }
+  .topbar__right {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    row-gap: .08rem;
+    padding-top: .02rem;
+  }
+  .topbar__right > * { flex: 0 0 auto; }
+  .me-chip__text { display: none; }
+}
+
 /* Phone landscape: use the marked space for larger sign-in and join controls. */
 @media (orientation: landscape) and (max-height: 600px) and (pointer: coarse),
        (orientation: landscape) and (max-height: 600px) and (any-pointer: coarse) {
