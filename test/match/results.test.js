@@ -1,7 +1,7 @@
 // RESULT: titles (评语) assignment, per-player rows, trophies, rewards.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assignTitles } from '../../server/match/results.js';
+import { assignTitles, buildResult } from '../../server/match/results.js';
 import { GameData } from '../../server/match/gamedata.js';
 import { PHASE } from '../../shared/constants.js';
 import { DATA, makeMatch } from './harness.js';
@@ -48,6 +48,8 @@ test('m.result rows: lineup, bonds, stats, roundsPassed per player, trophies (co
   h.m.onLeave('p_0');
   const r = h.ended;
   assert.ok(r);
+  assert.equal(typeof r.resultId, 'string');
+  assert.equal(buildResult(m, r).resultId, r.resultId, 'rebuilding a result retains its history identity');
   assert.equal(r.reason, 'abandoned');
   assert.equal(r.victory, false);
   const rows = Object.fromEntries(r.players.map((p) => [p.playerId, p]));
