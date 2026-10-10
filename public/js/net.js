@@ -797,9 +797,25 @@ export function createIdentity(deps = {}) {
       return initPromise;
     },
     /** @returns {string} remembered player name ('' if none) */
-    loadName: () => (sget(local, K_NAME) || '').slice(0, 64),
+    loadName: () => {
+      const previous = sget(local, K_NAME) || '';
+      try {
+        const bridge = deps.android !== undefined ? deps.android : globalThis.StrongholdAndroid;
+        const saved = bridge?.loadNickname?.();
+        if (typeof saved === 'string' && saved) return saved.slice(0, 64);
+        if (previous) bridge?.saveNickname?.(previous.slice(0, 64));
+      } catch { /* browser storage remains available if the native bridge fails */ }
+      return previous.slice(0, 64);
+    },
     /** @param {string} name */
-    saveName: (name) => sset(local, K_NAME, String(name)),
+    saveName: (name) => {
+      const value = String(name).slice(0, 64);
+      sset(local, K_NAME, value);
+      try {
+        const bridge = deps.android !== undefined ? deps.android : globalThis.StrongholdAndroid;
+        bridge?.saveNickname?.(value);
+      } catch { /* keep the browser copy */ }
+    },
     /** Token for `hello` (null ⇒ new session). Before init() only this tab's own token is used. */
     getToken() {
       if (current) return current;

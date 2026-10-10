@@ -810,6 +810,22 @@ describe('identity (reconnect-token selection across tabs)', () => {
     assert.equal(await racing.init(), 'fromWelcome');
   });
 
+  test('Android nickname survives origin changes and migrates the browser nickname', async () => {
+    const { createIdentity } = await mod('net.js');
+    let nickname = '';
+    const android = { loadNickname: () => nickname, saveNickname: (value) => { nickname = value; return true; } };
+    const local = memStorage();
+    local.setItem('sp.name', '旧代号');
+    const first = createIdentity({ local, session: null, channel: null, android });
+    assert.equal(first.loadName(), '旧代号');
+    assert.equal(nickname, '旧代号');
+    first.saveName('新代号');
+    const reopened = createIdentity({ local: memStorage(), session: null, channel: null, android });
+    assert.equal(reopened.loadName(), '新代号', 'new origin restores app-wide nickname');
+    reopened.saveName('');
+    assert.equal(reopened.loadName(), '', 'clearing the input clears the remembered name');
+  });
+
   test('entered flag, name, clearToken, bad tokens and missing storage', async () => {
     const { createIdentity, tokenHash } = await mod('net.js');
     const local = memStorage();

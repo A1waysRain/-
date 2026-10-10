@@ -183,7 +183,7 @@ const STATUS_TEXT = {
 export function TitleScreen() {
   const conn = useStore((s) => s.connection, shallowEqual);
   const pendingJoin = useStore((s) => s.ui.pendingJoin);
-  const [name, setName] = useState(() => store.get().me.name || identity.loadName() || '');
+  const [name, setName] = useState(() => identity.loadName() || store.get().me.name || '');
   const assetsSettled = useData('assets');
   const assets = data.get('assets');
   const backdrop = findUiAsset(assets, BACKDROP_KEYS);
@@ -252,7 +252,7 @@ export function TitleScreen() {
         </div>` : null}
         <${TextField} label="博士代号" micro="CALLSIGN" size="lg" icon="user" value=${name} maxLength=${NAME_MAX_LEN}
           placeholder="输入你的代号（最多 ${NAME_MAX_LEN} 字）" autoFocus=${!touchUi}
-          onInput=${setName} onEnter=${start} />
+          onInput=${(value) => { setName(value); identity.saveName(value); }} onEnter=${start} />
         <${Button} variant="primary" size="xl" block=${true} iconRight="chevrons" disabled=${!valid} onClick=${start}>开始<//>
         <div class="title-conn">
           <span class=${`status-dot ${dotClass}`}></span>

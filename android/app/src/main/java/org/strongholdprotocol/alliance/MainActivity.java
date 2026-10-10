@@ -539,6 +539,14 @@ public final class MainActivity extends Activity {
     }
 
     public final class GameBridge {
+        @JavascriptInterface public String loadNickname() {
+            return getSharedPreferences("game-preferences", MODE_PRIVATE).getString("nickname", "");
+        }
+        @JavascriptInterface public boolean saveNickname(String value) {
+            if (value == null || value.length() > 64) return false;
+            return getSharedPreferences("game-preferences", MODE_PRIVATE)
+                    .edit().putString("nickname", value).commit();
+        }
         @JavascriptInterface public String loadLoadout() {
             return getSharedPreferences("game-preferences", MODE_PRIVATE).getString("loadout", "");
         }
