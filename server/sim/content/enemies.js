@@ -1263,6 +1263,7 @@ const kitSelfFear = (ab) => [selfFear(ab)];
  *  after a block ends, the warrior's own block that the knock-out releases included (Battle._stealthSwitch). */
 const kitEmber = (ab) => [husk({ hits: T(ab, 'Revive[Trigger].prop_max_hp'), delay: T(ab, 'Revive[Trigger].interval') })];
 const kitPolluted = (ab) => [{
+  sil: true, // Death pollution is suppressed while silenced (枯朽战士 and its leader).
   death(c, b, e) {
     if (c.reason !== 'killed') return;
     pollution(b, e, e.x, e.y, T(ab, 'PollutedDie.projectile_range') ?? 1, T(ab, 'PollutedDie.projectile_life_time') ?? 0,

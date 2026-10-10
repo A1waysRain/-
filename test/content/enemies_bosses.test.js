@@ -647,6 +647,20 @@ test('GitHub #93: 深溟巢涌者 keeps walking with the 炎佑 dragon in range;
 });
 
 for (const key of ['enemy_1267_nhpbr', 'enemy_1267_nhpbr_2']) {
+  test(`${nm(key)}: silence prevents death pollution; expired silence allows it again`, () => {
+    for (const expired of [false, true]) {
+      const h = arena({ units: [{ chessId: 't_wall', row: 10, col: 6 }] });
+      h.step();
+      const e = put(h, key, [10, 7]);
+      h.b.applyStatus(e, 'silence', { duration: expired ? 0.1 : 60 });
+      if (expired) h.run(0.2);
+      killed(h, e, null);
+      h.run(3.05);
+      const zones = h.eventsOf('fx').filter((f) => f[1] === 'zone' && f[4].kind === 'pollution');
+      assert.equal(zones.length > 0, expired);
+      if (!expired) approx(h.unit('t_wall').stats.taken, 0);
+    }
+  });
   test(`${nm(key)}: death releases 污染秽蚀 — ground allies within ${tb(key, 'PollutedDie.projectile_range')} lose ${tb(key, 'PollutedDie.polluted_damage_low')} HP/s`, () => {
     const h = arena({ units: [{ chessId: 't_wall', row: 10, col: 6 }] });
     h.step();
